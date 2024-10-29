@@ -3,6 +3,8 @@
 // General idea: how nostalgia feels as time progresses
 // for the original idea, i would like to create a can as a main subject, but for now it'll be a rectangular shape
 // until the scenes are done
+// idea: can is filled with memories and when it explodes it'll take us 
+// to differenr scenes to express the emotions 
 // ==========================
 
 let subCan;
@@ -30,9 +32,27 @@ function draw() {
         bkgElem[i].move();
     }
 
+    subCan.lidAnimate();
     subCan.display();
 
     fill(0);
     text("(" + int(mouseX) + ", " + int(mouseY) + ")", int(mouseX), int(mouseY));
     print("(" + int(mouseX) + ", " + int(mouseY) + ")", int(mouseX), int(mouseY));
 }
+
+// function timeline() {
+//     print("lineX=",lineX);
+//     print ("speed=",timeSpeed);
+
+//     strokeCap(SQUARE);
+//     strokeWeight(30);
+//     stroke(0);
+
+//     line(lineX, 200, lineX + 100, 200);
+
+//     lineX += speed;
+
+//     if (lineX > width) {
+//       timeSpeed = 4;
+//     } 
+// }
