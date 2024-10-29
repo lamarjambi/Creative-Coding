@@ -1,5 +1,4 @@
 // js file for the background
-
 let bkgSpeed = 1;
 let bkgElem = [];
 

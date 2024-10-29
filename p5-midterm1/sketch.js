@@ -8,10 +8,12 @@
 // ==========================
 
 let subCan;
+let memories = [];
 
 function setup() {
     createCanvas(1280, 550);
 
+    // background, good vibes 
     for (let i = 0; i < 10; i++) {
         let xBall = random(width);
         let yBall = random(height/2);
@@ -21,38 +23,37 @@ function setup() {
 
     subCan = new CanShape(width/2, height/2);
     
-    // frameRate(10);
+    // memories splash
+    for (let i = 0; i < 5; i++) {
+        memories.push(new Memory());
+    }
 }
 
 function draw() {
     background(164, 215, 250);
 
-    for (let i = 0; i < bkgElem.length; i++) {
-        bkgElem[i].display();
-        bkgElem[i].move();
+    for (let elem of bkgElem) {
+        elem.display();
+        elem.move();
     }
 
-    subCan.lidAnimate();
+    for (let i = memories.length - 1; i >= 0; i--) {
+        memories[i].move();
+        memories[i].display();
+
+        if (memories[i].yCoor > height) {
+            memories.splice(i, 1); // remove memories (shapes) when they go off screen
+            memories.push(new Memory());
+        }
+
+        // collision 
+        else if (memories[i].hits(subCan)) {
+            subCan.collectMemory(memories[i]);
+            memories.splice(i, 1);
+            memories.push(new Memory()); 
+        }
+    }
+    
     subCan.display();
-
-    fill(0);
-    text("(" + int(mouseX) + ", " + int(mouseY) + ")", int(mouseX), int(mouseY));
-    print("(" + int(mouseX) + ", " + int(mouseY) + ")", int(mouseX), int(mouseY));
+    subCan.move();
 }
-
-// function timeline() {
-//     print("lineX=",lineX);
-//     print ("speed=",timeSpeed);
-
-//     strokeCap(SQUARE);
-//     strokeWeight(30);
-//     stroke(0);
-
-//     line(lineX, 200, lineX + 100, 200);
-
-//     lineX += speed;
-
-//     if (lineX > width) {
-//       timeSpeed = 4;
-//     } 
-// }

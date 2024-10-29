@@ -9,16 +9,17 @@ class CanShape {
         this.height = 240;
         this.color = color(192, 192, 192);
 
-        // lid animation
+        // collection of memories -> instances of class Memory
+        this.memories = [];
+
+        // lid animations
         this.lidCenterX = 0;
         this.lidCenterY = -this.height/2;
-
         this.lidAngle = 0;
-        this.dragAmount = 0; 
+        this.dragAmount = 0;
     }
 
     display() {
-        // add shading later
         push();
         translate(this.xCoor, this.yCoor);
         
@@ -27,6 +28,18 @@ class CanShape {
         rectMode(CENTER);
         fill(this.color);
         rect(0, 0, this.width, this.height);
+
+
+        for (let memory of this.memories) {
+            fill(memory.color);
+            noStroke();
+            ellipse(memory.x, memory.y, memory.size);
+            triangle(
+                memory.x, memory.y,
+                memory.x - 10, memory.y - 10,
+                memory.x + 10, memory.y + 10
+            );
+        }
 
         stroke(0);
         strokeWeight(2);
@@ -39,67 +52,53 @@ class CanShape {
         line(-this.width/2, -this.height/2, -this.width/2, this.height/2);
         line(this.width/2, -this.height/2, this.width/2, this.height/2);
 
-        // bottom lid - get rid of inner curve
+        // bottom lid
         ellipse(0, this.height/2, this.width, this.width/5);
         ellipse(0, this.height/2 - 2, this.width - 5, this.width/5 - 2);
-        
 
         pop();
+    }
+
+    move() {
+        if (keyIsDown(LEFT_ARROW)) {
+            this.xCoor -= 5;
+        }
+        if (keyIsDown(RIGHT_ARROW)) {
+            this.xCoor += 5;
+        }
+        this.xCoor = constrain(this.xCoor, this.width/2, width - this.width/2);
     }
 
     displayTopLid() {
         fill(this.color);
     
         // top lid
-        ellipse(0, -this.height / 2, this.width, this.width / 5);
-        ellipse(0, -this.height / 2 + 2, this.width - 5, this.width / 5 - 2);
+        ellipse(0, -this.height/2, this.width, this.width/5);
+        ellipse(0, -this.height/2 + 2, this.width - 5, this.width/5 - 2);
     
         // edges of can and ellipse
         let smallerEllipseWidth = this.width - 30;    
-        let rightEdgeX = smallerEllipseWidth / 2;  
-        let rightEdgeY = -this.height / 2;       
+        let rightEdgeX = smallerEllipseWidth/2;  
+        let rightEdgeY = -this.height/2;       
     
         push();
+        translate(rightEdgeX, rightEdgeY);
         
-        // make the "new center" the edges so we can control the rotation from there
-        translate(rightEdgeX, rightEdgeY); 
-        
-        let angle = atan2(mouseY - (this.yCoor + rightEdgeY),  mouseX - (this.xCoor + rightEdgeX));
+        let angle = atan2(mouseY - (this.yCoor + rightEdgeY),
+                         mouseX - (this.xCoor + rightEdgeX));
         rotate(angle);
 
-        ellipse(-((this.width - 30) / 2), 0, this.width - 30, this.width / 5 - 12);
-        
+        ellipse(-((this.width - 30)/2), 0, this.width - 30, this.width/5 - 12);
         pop();
     }
 
-    lidAnimate() {
-        /* 
-        :desc: should animate the lid opening, no need to 
-        pass coords, as the naimation should remain clear
-        the top lid could be its own entitiy, since it'll be 
-        interactive
-        rotate lid from the right 
-        */
-        let distToLid = map(mouseX, mouseY, this.xCoor, this.yCoor - this.height / 2);
-        
-        if (distToLid < 100) { 
-            this.dragAmount = min(this.dragAmount + 0.05, 1); // opening lid
-        } else {
-            this.dragAmount = max(this.dragAmount - 0.05, 0); // closing lid
-        }
-
-        this.lidAngle = map(this.dragAmount, 0, 1, -PI / 2, 0);
-
+    collectMemory(memory) {
+        // store memories
+        this.memories.push({
+            x: random(-this.width/2 + 20, this.width/2 - 20),
+            y: random(-this.height/2 + 20, this.height/2 - 20),
+            color: memory.color,
+            size: memory.size
+        });
     }
-
-    // updateState(state) {
-    //     switch(state) {
-    //         case 'happy':
-    //             this.color = color(192, 192, 192);
-    //             break;
-    //         case 'nostalgic':
-    //             this.color = color(150, 150, 150);
-    //             break;
-    //     }
-    // }
 }
