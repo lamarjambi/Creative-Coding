@@ -8,6 +8,7 @@
 // ==========================
 
 let subCan;
+let caughtMem = 0;
 let memories = [];
 
 function setup() {
@@ -41,17 +42,27 @@ function draw() {
         memories[i].move();
         memories[i].display();
 
+        // check if memory was missed
         if (memories[i].yCoor > height) {
             memories.splice(i, 1); // remove memories (shapes) when they go off screen
             memories.push(new Memory());
         }
 
-        // collision 
+        // check if collision (caught)
         else if (memories[i].hits(subCan)) {
             subCan.collectMemory(memories[i]);
             memories.splice(i, 1);
             memories.push(new Memory()); 
+            caughtMem++;
         }
+    }
+
+    if (subCan.isFull(caughtMem)) {
+        // explode!! these are placeholders
+        noLoop(); 
+        textSize(32);
+        fill(0, 255, 0);
+        text("FULLLL");
     }
     
     subCan.display();

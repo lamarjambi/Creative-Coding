@@ -1,5 +1,7 @@
 // js file for main subject -- can!
 // fill the can with diff shapes and colors to represent memories!!
+// fill -> catch around 15 memories, have counter for shapes entering 
+// using an array probs
 
 class CanShape {
     constructor(xCoor, yCoor) {
@@ -11,12 +13,14 @@ class CanShape {
 
         // collection of memories -> instances of class Memory
         this.memories = [];
+        this.MAX = 15;
 
         // lid animations
         this.lidCenterX = 0;
         this.lidCenterY = -this.height/2;
         this.lidAngle = 0;
         this.dragAmount = 0;
+        
     }
 
     display() {
@@ -100,5 +104,9 @@ class CanShape {
             color: memory.color,
             size: memory.size
         });
+    }
+
+    isFull(caughtMem) {
+        return caughtMem >= this.MAX;
     }
 }

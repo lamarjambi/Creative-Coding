@@ -4,9 +4,9 @@ class Memory {
   constructor() {
       this.xCoor = random(width);
       this.yCoor = 0;
-      this.size = 20;
+      this.size = random(20, 150);
       this.speed = random(2, 5);
-      this.color = color(200, 100, 150);
+      this.color = color(random(150, 255), random(150, 255), random(150, 255));
   }
 
   move() {
