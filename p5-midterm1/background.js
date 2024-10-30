@@ -25,11 +25,3 @@ class BkgBall {
         }
     }
 }
-
-// function updateSpeed(state) {
-//     if (state === 'happy') {
-//         bkgSpeed = 0.5;
-//     } else if (state === 'nostalgic') {
-//         bkgSpeed = 2;
-//     }
-// }
