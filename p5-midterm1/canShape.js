@@ -13,7 +13,7 @@ class CanShape {
 
         // collection of memories -> instances of class Memory
         this.memories = [];
-        this.MAX = 5;
+        this.MAX = 7;
 
         // lid animations
         this.lidCenterX = 0;
@@ -229,35 +229,35 @@ class CanShape {
     }
 
     explode() {
-        // if (!this.explosionStarted) {
-        //     this.explosionStarted = true;
-        //     this.exploded = true;
+        if (!this.explosionStarted) {
+            this.explosionStarted = true;
+            this.exploded = true;
     
-        //     for (let i = 0; i < 8; i++) {
-        //         this.canPieces.push({
-        //             x: 0,
-        //             y: 0,
-        //             dx: random(-this.explosionForce, this.explosionForce),
-        //             dy: random(-this.explosionForce, this.explosionForce),
-        //             rotation: random(TWO_PI),
-        //             rotationSpeed: random(-0.2, 0.2),
-        //             width: this.width / 2,
-        //             height: this.height / 4
-        //         });
-        //     }
+            for (let i = 0; i < 8; i++) {
+                this.canPieces.push({
+                    x: 0,
+                    y: 0,
+                    dx: random(-this.explosionForce, this.explosionForce),
+                    dy: random(-this.explosionForce, this.explosionForce),
+                    rotation: random(TWO_PI),
+                    rotationSpeed: random(-0.2, 0.2),
+                    width: this.width / 2,
+                    height: this.height / 4
+                });
+            }
 
-        //     for (let i = 0; i < 5; i++) { 
-        //         this.memories.push(new Memory(this.xCoor, this.yCoor - this.height / 2)); 
-        //     }
+            for (let i = 0; i < 5; i++) { 
+                this.memories.push(new Memory(this.xCoor, this.yCoor - this.height / 2)); 
+            }
 
-        //     for (let memory of this.memories) {
-        //         memory.dx = random(-this.explosionForce, this.explosionForce);
-        //         memory.dy = random(-this.explosionForce, this.explosionForce);
-        //         memory.rotation = random(TWO_PI);
-        //         memory.rotationSpeed = random(-0.1, 0.1);
-        //         memory.floating = true; 
-        //     }
-        // }
+            for (let memory of this.memories) {
+                memory.dx = random(-this.explosionForce, this.explosionForce);
+                memory.dy = random(-this.explosionForce, this.explosionForce);
+                memory.rotation = random(TWO_PI);
+                memory.rotationSpeed = random(-0.1, 0.1);
+                memory.floating = true; 
+            }
+        }
     }
     
 }

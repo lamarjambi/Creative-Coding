@@ -16,90 +16,174 @@ let cols = 50;
 let rows = 50;
 let currRow = 0;
 let currCol = 0;
-let isTransitioning = false;
+// let isTransitioning = false;
+
+let state = 0;
+
+// melachony
+let particles = [];
+let drips = [];
+const PARTICLE_COUNT = 150;
+const DRIP_COUNT = 30;
 
 function setup() {
     createCanvas(1280, 550);
-
     subCan = new CanShape(width / 2, height / 2);
     
     for (let i = 0; i < 5; i++) {
         memories.push(new Memory());
     }
+
+    if (state == 1) {
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            particles.push({
+              x: random(width),
+              y: random(height),
+              size: random(2, 6),
+              speed: random(0.2, 0.8),
+              opacity: random(40, 120)
+            });
+          }
+        
+          for (let i = 0; i < DRIP_COUNT; i++) {
+            createNewDrip();
+          }
+          
+          noiseDetail(3, 0.5);
+    }
 }
 
 function draw() {
-    // console.log("Caught Memories:", caughtMem);
-    // console.log("Is Can Full:", subCan.isFull(caughtMem));
-    
-    if (!isTransitioning) {
-        if (subCan.isShaking) {
-            background(random(255), random(255), random(255));
-        } else {
-            background(164, 215, 250);
+    if (subCan.isShaking) {
+        background(random(255), random(255), random(255));
+    } else {
+        background(164, 215, 250);
+    }
+
+    for (let elem of bkgElem) {
+        elem.display();
+        elem.move();
+    }
+
+    for (let i = memories.length - 1; i >= 0; i--) {
+        memories[i].move();
+        memories[i].display();
+
+        // check if memory was missed
+        if (memories[i].yCoor > height) {
+            memories.splice(i, 1); // remove memories (shapes) when they go off screen
+            memories.push(new Memory());
+        }
+        // check if there's collision (caught)
+        else if (memories[i].hits(subCan)) {
+            subCan.collectMemory(memories[i]);
+            memories.splice(i, 1);
+            memories.push(new Memory()); 
+            caughtMem++;
+        }
+    }
+
+    subCan.display();
+    subCan.move();
+
+    if (subCan.isFull()) {
+        // explode!! 
+        console.log("BOOOMB!");
+        subCan.explode();
+        
+        console.log("transitioning");
+        transition();
+    }
+
+    if (state == 1) {
+        fill(20, 22, 28, 15);
+        rect(0, 0, width, height);
+
+        for (let p of particles) {
+            let xOffset = frameCount * 0.001 + p.x * 0.005;
+            let driftX = map(noise(xOffset), 0, 1, -1, 1);
+            
+            p.x += driftX;
+            p.y += p.speed;
+            
+            if (p.y > height) {
+                p.y = 0;
+                p.x = random(width);
+            }
+
+            if (p.x < 0) {
+                p.x = width;
+            }
+
+            if (p.x > width) {
+                p.x = 0;
+            }
+
+            let gradient = drawingContext.createRadialGradient(
+                p.x, p.y, 0, 
+                p.x, p.y, p.size * 2
+            );
+
+            gradient.addColorStop(0, `rgba(130, 150, 180, ${p.opacity / 255})`);
+            gradient.addColorStop(1, 'rgba(130, 150, 180, 0)');
+            drawingContext.fillStyle = gradient;
+            circle(p.x, p.y, p.size * 2);
         }
 
-        for (let elem of bkgElem) {
-            elem.display();
-            elem.move();
-        }
+        for (let i = drips.length - 1; i >= 0; i--) {
+            let drip = drips[i];
 
-        for (let i = memories.length - 1; i >= 0; i--) {
-            memories[i].move();
-            memories[i].display();
+            drip.y += drip.speed;
+            drip.length = min(drip.length + 0.5, drip.maxLength);
+            drip.opacity -= 0.8;
 
-            if (memories[i].yCoor > height) {
-                memories.splice(i, 1); 
-                memories.push(new Memory());
-            } else if (memories[i].hits(subCan)) {
-                subCan.collectMemory(memories[i]);
-                memories.splice(i, 1);
-                memories.push(new Memory()); 
-                caughtMem++;
+            if (drip.opacity > 0) {
+                let gradient = drawingContext.createLinearGradient(
+                    drip.x, drip.y - drip.length, 
+                    drip.x, drip.y
+                );
+
+                gradient.addColorStop(0, `rgba(150, 170, 200, 0)`);
+                gradient.addColorStop(1, `rgba(150, 170, 200, ${drip.opacity / 255})`);
+                
+                drawingContext.strokeStyle = gradient;
+                drawingContext.lineWidth = drip.width;
+                line(drip.x, drip.y - drip.length, drip.x, drip.y);
+            }
+
+            if (drip.y - drip.length > height || drip.opacity <= 0) {
+                drips.splice(i, 1);
+                createNewDrip();
             }
         }
-
-        subCan.display();
-        subCan.move();
-
-        if (subCan.isFull(caughtMem)) {
-            console.log("Can is full! Starting transition...");
-            isTransitioning = true;
-            background(0);  
-        }
-    } else {
-        transition();
     }
 }
 
 function transition() {
+    background(0);
+    console.log("transitioning");
 
-    for (let i = 0; i < 5; i++) {
-        if (currRow < rows) {
-            let x = currCol * 50 + 25;
-            let y = currRow * 50 + 25;
+    if (currRow < rows) {
+        let ellipseSize = random(150, 250);
+        let x = currCol * 50 + 36;
+        let y = currRow * 50 - 89; 
 
-            let opaValue = random(50, 255);
-            fill(random(255), random(255), random(255), opaValue);
+        let opaValue = random(50, 255);
+        fill(random(255), random(255), random(255), opaValue);
+        ellipse(x, y, ellipseSize, ellipseSize);
 
-            let ellipseSize = random(150, 250);
-            ellipse(x, y, ellipseSize, ellipseSize);
+        currCol++;
 
-            currCol++;
-
-            if (currCol >= cols) {
-                currCol = 0;
-                currRow++;
-            }
-
-        } else {
-            isTransitioning = false;
-            currRow = 0;
+        if (currCol >= cols) {
             currCol = 0;
-            caughtMem = 0;
-
-            // reset
-            setup(); 
+            currRow++;
         }
+    } else {
+        // isTransitioning = false;
+        caughtMem = 0;
+
+        currRow = 0;  
+        currCol = 0;  
+        setup(); 
     }
 }
