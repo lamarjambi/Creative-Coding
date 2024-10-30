@@ -13,14 +13,14 @@ let memories = [];
 
 // transition
 let cols = 50;
-let rows = 25;
+let rows = 20;
 let currRow = 0;
 let currCol = 0;
 let isTransitioning = false;
 
 let state = 0;
 
-// melachony
+// melancholy
 let particles = [];
 let drips = [];
 const PARTICLE_COUNT = 150;
@@ -34,7 +34,10 @@ function setup() {
         memories.push(new Memory());
     }
 
+    // for melancholy setup
     if (state == 1) {
+        background(20, 22, 28);
+
         for (let i = 0; i < PARTICLE_COUNT; i++) {
             particles.push({
               x: random(width),
@@ -54,103 +57,66 @@ function setup() {
 }
 
 function draw() {
-    if (subCan.isShaking) {
-        background(random(255), random(255), random(255));
-    } else {
-        background(164, 215, 250);
-    }
-    
-    for (let elem of bkgElem) {
-        elem.display();
-        elem.move();
-    }
-
-    for (let i = memories.length - 1; i >= 0; i--) {
-        memories[i].move();
-        memories[i].display();
-
-        // check if memory was missed
-        if (memories[i].yCoor > height) {
-            memories.splice(i, 1);
-            memories.push(new Memory());
-
-        // check if there's collision (caught)
-        } else if (memories[i].hits(subCan)) {
-            subCan.collectMemory(memories[i]);
-            memories.splice(i, 1);
-            memories.push(new Memory()); 
-            caughtMem++;
-        }
-    }
-
-    subCan.display();
-    subCan.move();
-
-    if (subCan.isFull(caughtMem)) {
-        console.log("BOOOMB!");
-        isTransitioning = true;
-        console.log("subcan is full now");
-    }
-
-    if (state == 1) {
-        fill(20, 22, 28, 15);
-        rect(0, 0, width, height);
-
-        for (let p of particles) {
-            let xOffset = frameCount * 0.001 + p.x * 0.005;
-            let driftX = map(noise(xOffset), 0, 1, -1, 1);
-            p.x += driftX;
-            p.y += p.speed;
-            
-            if (p.y > height) p.y = 0;
-            if (p.x < 0) p.x = width;
-            if (p.x > width) p.x = 0;
-
-            let gradient = drawingContext.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 2);
-            gradient.addColorStop(0, `rgba(130, 150, 180, ${p.opacity / 255})`);
-            gradient.addColorStop(1, 'rgba(130, 150, 180, 0)');
-            drawingContext.fillStyle = gradient;
-            circle(p.x, p.y, p.size * 2);
+    // default scene
+    if (state == 0) {
+        if (subCan.isShaking) {
+            background(random(255), random(255), random(255));
+        } else {
+            background(164, 215, 250);
         }
 
-        for (let i = drips.length - 1; i >= 0; i--) {
-            let drip = drips[i];
-            drip.y += drip.speed;
-            drip.length = min(drip.length + 0.5, drip.maxLength);
-            drip.opacity -= 0.8;
+        for (let elem of bkgElem) {
+            elem.display();
+            elem.move();
+        }
 
-            if (drip.opacity > 0) {
-                let gradient = drawingContext.createLinearGradient(drip.x, drip.y - drip.length, drip.x, drip.y);
-                gradient.addColorStop(0, `rgba(150, 170, 200, 0)`);
-                gradient.addColorStop(1, `rgba(150, 170, 200, ${drip.opacity / 255})`);
-                drawingContext.strokeStyle = gradient;
-                drawingContext.lineWidth = drip.width;
-                line(drip.x, drip.y - drip.length, drip.x, drip.y);
-            }
+        for (let i = memories.length - 1; i >= 0; i--) {
+            memories[i].move();
+            memories[i].display();
 
-            if (drip.y - drip.length > height || drip.opacity <= 0) {
-                drips.splice(i, 1);
-                createNewDrip();
+            // check if memory was missed
+            if (memories[i].yCoor > height) {
+                memories.splice(i, 1);
+                memories.push(new Memory());
+
+            // check if there's collision (caught)
+            } else if (memories[i].hits(subCan)) {
+                subCan.collectMemory(memories[i]);
+                memories.splice(i, 1);
+                memories.push(new Memory()); 
+                caughtMem++;
             }
+        }
+
+        subCan.display();
+        subCan.move();
+
+        if (subCan.isFull(caughtMem)) {
+            isTransitioning = true;
         }
     }
 
     if (isTransitioning) {
         transition();
     }
+
+    // melancholy
+    if (state == 1) {
+        melancholyScene();
+    }
 }
 
-
+// should happen between scenes
 function transition() {
-    console.log("transitioning");
+    let xOffset = (width - (cols + 1) * 50) / 2;
+    let yOffset = (height - (rows - 1) * 50) / 2;
 
     for (let row = 0; row <= currRow; row++) {
         for (let col = 0; col < (row === currRow ? currCol : cols); col++) {
             let ellipseSize = random(150, 250);
 
-            // spacing between each ellipse
-            let x = col * 50;
-            let y = row * 50; 
+            let x = col * 50 + xOffset;
+            let y = row * 50 + yOffset; 
 
             let opaValue = random(50, 255);
             fill(random(255), random(255), random(255), opaValue);
@@ -158,29 +124,148 @@ function transition() {
         }
     }
 
-    currCol++; // next row
+    currCol++;
     if (currCol >= cols) {
         currCol = 0;
         currRow++;
     }
 
-    // if the entire screen is covered    
+    // when the screen is filled with marbles
     if (currRow >= rows) {
         isTransitioning = false;
         caughtMem = 0;
         currRow = 0;  
         currCol = 0;  
 
-        state++;
+        state++;  
     }
 }
 
+function melancholyScene() {
+    background(20, 22, 28);
 
-// function mousePressed() {
-//     // when mouse pressed
-//     state++;
+    fill(20, 22, 28, 15);
+    rect(0, 0, width, height);
 
-//     if (state > 2) {
-//         state = 0; // reset
-//     }
-// }
+    for (let p of particles) {
+        let xOffset = frameCount * 0.001 + p.x * 0.005;
+        let driftX = map(noise(xOffset), 0, 1, -1, 1);
+        
+        p.x += driftX;
+        p.y += p.speed;
+        
+        if (p.y > height) {
+        p.y = 0;
+        p.x = random(width);
+        }
+
+        if (p.x < 0) {
+        p.x = width;
+        }
+
+        if (p.x > width) {
+        p.x = 0;
+        }
+
+        let gradient = drawingContext.createRadialGradient(
+        p.x, p.y, 0, 
+        p.x, p.y, p.size * 2
+        );
+
+        gradient.addColorStop(0, `rgba(130, 150, 180, ${p.opacity / 255})`);
+        gradient.addColorStop(1, 'rgba(130, 150, 180, 0)');
+        drawingContext.fillStyle = gradient;
+        circle(p.x, p.y, p.size * 2);
+    }
+
+    for (let i = drips.length - 1; i >= 0; i--) {
+        let drip = drips[i];
+
+        drip.y += drip.speed;
+        drip.length = min(drip.length + 0.5, drip.maxLength);
+        drip.opacity -= 0.8;
+
+        if (drip.opacity > 0) {
+        let gradient = drawingContext.createLinearGradient(
+            drip.x, drip.y - drip.length, 
+            drip.x, drip.y
+        );
+
+        gradient.addColorStop(0, `rgba(150, 170, 200, 0)`);
+        gradient.addColorStop(1, `rgba(150, 170, 200, ${drip.opacity / 255})`);
+        
+        drawingContext.strokeStyle = gradient;
+        drawingContext.lineWidth = drip.width;
+        line(drip.x, drip.y - drip.length, drip.x, drip.y);
+        }
+
+        if (drip.y - drip.length > height || drip.opacity <= 0) {
+        drips.splice(i, 1);
+        createNewDrip();
+        }
+    }
+
+    drawVignette();
+
+    if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
+        noFill();
+        stroke(150, 170, 200, 50);
+        circle(mouseX, mouseY, 20);
+    }
+}
+
+function createNewDrip() {
+    drips.push({
+        x: random(width),
+        y: random(height/3), 
+        speed: random(1, 3),
+        length: 0,
+        maxLength: random(20, 50),
+        width: random(1, 2.5),
+        opacity: random(100, 200)
+    });
+}
+
+function drawVignette() {
+    let gradient = drawingContext.createRadialGradient(
+        width/2, height/2, 0,
+        width/2, height/2, dist(width/2, height/2, 0, 0)
+    );
+    gradient.addColorStop(0.6, 'rgba(20, 22, 28, 0)');
+    gradient.addColorStop(1, 'rgba(20, 22, 28, 0.4)');
+    drawingContext.fillStyle = gradient;
+    rect(0, 0, width, height);
+}
+
+function mouseMoved() {
+
+  if (random() < 0.3) { 
+    for (let i = 0; i < 2; i++) { 
+      drips.push({
+        x: mouseX + random(-20, 20),
+        y: mouseY,
+        speed: random(1, 3),
+        length: 0,
+        maxLength: random(20, 50),
+        width: random(1, 2.5),
+        opacity: random(100, 200)
+      });
+    }
+  }
+}
+
+function mousePressed() {
+  // rain splash at mouse
+  for (let i = 0; i < 8; i++) {
+
+    drips.push({
+      x: mouseX + random(-30, 30),
+      y: mouseY + random(-30, 30),
+      speed: random(2, 4),
+      length: 0,
+      maxLength: random(30, 60),
+      width: random(1.5, 3),
+      opacity: random(150, 255)
+    });
+  }
+}
