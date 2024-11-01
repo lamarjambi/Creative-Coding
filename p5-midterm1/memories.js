@@ -1,4 +1,5 @@
 // js file for memories
+// fix: add more details for the memory marbles - finishing touches (dont focus too much rn)
 
 class Memory {
     constructor(x = random(width), y = 0, size = random(20, 150)) {

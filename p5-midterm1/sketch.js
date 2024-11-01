@@ -5,6 +5,10 @@
 // until the scenes are done
 // idea: can is filled with memories and when it explodes it'll take us 
 // to differenr scenes to express the emotions **transitionsss**
+// maybe the after the EMOTIONS BOMB, expand on a blue/dark navy marble then the melancholy scene (state = 1)
+// then go back to da bomb, expand on green for calm scene (state = 2)
+// then bom, expand on yellow for happy scene (state = 3)
+// FINALLY, close the damn lid because memories are part of us :]
 // ==========================
 
 let subCan;
@@ -24,19 +28,33 @@ let state = 0;
 let particles = [];
 let drips = [];
 const PARTICLE_COUNT = 150;
-const DRIP_COUNT = 30;
+const DROPS_THRESHOLD = 850;
+let dripsCount = 0;
+
+// calm - taking a breath
+let isGradient = false;
+let clouds = [];
+let sparkles = [];
+const CLOUD_COUNT = 8;
+let totalClouds = 0;
+const CLOUDS_THRESHOLD = 4;
+const CLOUD_Y_RANGE = 150;
+
 
 function setup() {
     createCanvas(1280, 550);
     subCan = new CanShape(width / 2, height / 2);
     
+    // debugging 
+    // state = 2;
+
     for (let i = 0; i < 5; i++) {
         memories.push(new Memory());
     }
 
     // for melancholy setup
-    if (state == 1) {
-        background(20, 22, 28);
+    if (state === 1) {
+        // background(20, 22, 28);
 
         for (let i = 0; i < PARTICLE_COUNT; i++) {
             particles.push({
@@ -53,12 +71,17 @@ function setup() {
           }
           
           noiseDetail(3, 0.5);
+
+          // for calm setup
+    } else if (state === 2) {
+        console.log("Setup: Initializing clouds for calm state");
+        initializeClouds();
     }
 }
 
 function draw() {
     // default scene
-    if (state == 0) {
+    if (state === 0) {
         if (subCan.isShaking) {
             background(random(255), random(255), random(255));
         } else {
@@ -94,21 +117,29 @@ function draw() {
         if (subCan.isFull(caughtMem)) {
             isTransitioning = true;
         }
+
+    } else if (state === 1) {
+        if (isTransitioning) {
+            background(random(255), random(255), random(255));
+        } else {
+            background(20, 22, 28);
+        }
+
+        melancholyScene();
+
+    } else if (state === 2) {
+        calmScene();
     }
 
+    // is isTransitioning = true;
     if (isTransitioning) {
         transition();
-    }
-
-    // melancholy
-    if (state == 1) {
-        melancholyScene();
     }
 }
 
 // should happen between scenes
 function transition() {
-    let xOffset = (width - (cols + 1) * 50) / 2;
+    let xOffset = (width - (cols + 20) * 50) / 2;
     let yOffset = (height - (rows - 1) * 50) / 2;
 
     for (let row = 0; row <= currRow; row++) {
@@ -142,8 +173,6 @@ function transition() {
 }
 
 function melancholyScene() {
-    background(20, 22, 28);
-
     fill(20, 22, 28, 15);
     rect(0, 0, width, height);
 
@@ -175,7 +204,7 @@ function melancholyScene() {
         gradient.addColorStop(0, `rgba(130, 150, 180, ${p.opacity / 255})`);
         gradient.addColorStop(1, 'rgba(130, 150, 180, 0)');
         drawingContext.fillStyle = gradient;
-        circle(p.x, p.y, p.size * 2);
+        ellipse(p.x, p.y, p.size * 2);
     }
 
     for (let i = drips.length - 1; i >= 0; i--) {
@@ -205,12 +234,14 @@ function melancholyScene() {
         }
     }
 
-    drawVignette();
-
     if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
         noFill();
         stroke(150, 170, 200, 50);
-        circle(mouseX, mouseY, 20);
+        ellipse(mouseX, mouseY, 20);
+    }
+
+    if (dripsCount >= DROPS_THRESHOLD) {
+        isTransitioning = true;  
     }
 }
 
@@ -224,21 +255,11 @@ function createNewDrip() {
         width: random(1, 2.5),
         opacity: random(100, 200)
     });
-}
 
-function drawVignette() {
-    let gradient = drawingContext.createRadialGradient(
-        width/2, height/2, 0,
-        width/2, height/2, dist(width/2, height/2, 0, 0)
-    );
-    gradient.addColorStop(0.6, 'rgba(20, 22, 28, 0)');
-    gradient.addColorStop(1, 'rgba(20, 22, 28, 0.4)');
-    drawingContext.fillStyle = gradient;
-    rect(0, 0, width, height);
+    dripsCount++;
 }
 
 function mouseMoved() {
-
   if (random() < 0.3) { 
     for (let i = 0; i < 2; i++) { 
       drips.push({
@@ -250,6 +271,8 @@ function mouseMoved() {
         width: random(1, 2.5),
         opacity: random(100, 200)
       });
+
+      dripsCount++;
     }
   }
 }
@@ -267,5 +290,144 @@ function mousePressed() {
       width: random(1.5, 3),
       opacity: random(150, 255)
     });
+
+    dripsCount++;
   }
+}
+
+// had to create this due to bugs in setup() ):
+function initializeClouds() {
+    console.log("creating clouds");
+    clouds = [];
+    for (let i = 0; i < CLOUD_COUNT; i++) {
+        clouds.push({
+            x: random(width),
+            y: random(20, CLOUD_Y_RANGE),
+            size: random(60, 120),
+            speed: random(0.2, 0.5)
+        });
+    }
+}
+
+function calmScene() {
+    // debugging 
+    console.log("starting calmScene"); 
+    console.log("num of clouds:", clouds.length);
+    
+    // gradient sky
+    if (isTransitioning) {
+        background(random(255), random(255), random(255));
+    } else {
+        // Draw gradient sky
+        let c1 = color(135, 206, 235);
+        let c2 = color(255, 253, 208);
+        
+        noStroke(); // Reset stroke before gradient
+        for (let y = 0; y < height; y++) {
+            let inter = map(y, 0, height, 0, 1);
+            let c = lerpColor(c1, c2, inter);
+            fill(c);
+            rect(0, y, width, 1);
+        }
+    }
+
+    // if clouds array empty -> make clouds!!
+    if (clouds.length === 0) {
+        for (let i = 0; i < CLOUD_COUNT; i++) {
+            clouds.push({
+                x: random(width),
+                y: random(20, CLOUD_Y_RANGE),
+                size: random(60, 120),
+                speed: random(0.2, 0.5)
+            });
+        }
+    }
+
+    clouds.forEach((cloud, index) => {
+        drawCloud(cloud.x, cloud.y, cloud.size);
+        cloud.x += cloud.speed;
+    });
+
+    // if cloud is off screen -> replace 
+    let cloudsToAdd = 0;
+    clouds = clouds.filter(cloud => {
+        if (cloud.x > width + cloud.size) {
+            cloudsToAdd++;
+            return false;
+        }
+        return true;
+    });
+
+    // more clouds :3
+    for (let i = 0; i < cloudsToAdd; i++) {
+        clouds.push({
+            x: -random(50, 100),
+            y: random(20, CLOUD_Y_RANGE),
+            size: random(60, 120),
+            speed: random(0.2, 0.5)
+        });
+        totalClouds++;
+    }
+
+    // sparkles interactivity!!!
+    if (mousePressed) {
+        sparkles.push({
+            x: mouseX + random(-20, 20),
+            y: mouseY + random(-20, 20),
+            life: 1,
+            size: random(5, 15)
+        });
+    }
+
+    sparkles = sparkles.filter(s => {
+        s.life -= 0.02;
+        if (s.life > 0) {
+            drawSparkle(s);
+            return true;
+        }
+        return false;
+    });
+
+    if (totalClouds >= CLOUDS_THRESHOLD) {
+        isTransitioning = true;
+    }
+}
+
+function drawCloud(x, y, size) {
+    push(); 
+    noStroke();
+    fill(255, 255, 255, 200);
+
+    ellipse(x, y, size);
+    
+    // cloud puffs
+    ellipse(x + size/2, y, size * 0.8);
+    ellipse(x - size/2, y, size * 0.7);
+    ellipse(x, y - size/3, size * 0.6);
+    ellipse(x, y + size/4, size * 0.7);
+    
+    pop(); 
+}
+
+function drawSparkle(s) {
+    push();
+    translate(s.x, s.y);
+    rotate(frameCount * 0.02); 
+    noStroke();
+    fill(255, 200, 0, s.life * 255);
+    
+    for (let i = 0; i < 4; i++) {
+        rotate(PI/2);
+        ellipse(0, 0, s.size * s.life, s.size/3 * s.life);
+    }
+    pop();
+}
+
+// debugging
+function keyPressed() {
+    if (key === '2') {
+        console.log("Switching to calm scene");
+        state = 2;
+        initializeClouds();
+    }
 }
