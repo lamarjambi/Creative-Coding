@@ -18,10 +18,8 @@ class CanShape {
         // lid animations
         this.lidCenterX = 0;
         this.lidCenterY = -this.height/2;
-        this.lidAngle = 0;
-        this.dragAmount = 0;
+        this.lidAngle = PI;
         this.isClosing = false;
-        // this.targetAngle = 0;
 
         // shaking properties
         this.isShaking = false;
@@ -103,27 +101,32 @@ class CanShape {
     
         // edges of can and ellipse
         let smallerEllipseWidth = this.width - 30;    
-        let rightEdgeX = smallerEllipseWidth/2;  
-        let leftEdgeX = -smallerEllipseWidth/2;
+        let rightEdgeX = smallerEllipseWidth/2;
         let rightEdgeY = -this.height/2;       
     
         push();
         translate(rightEdgeX, rightEdgeY);
         
-        let angle;
+        let angle = 0;
         if (this.isClosing) {
-            this.lidAngle = lerp(this.lidAngle, PI, 0.1);
-            angle = this.lidAngle;
+            if (this.lidAngle > angle) {
+                this.lidAngle -= 0.02;
+            } 
+
+            if (Math.abs(this.lidAngle - angle) < 0.02) {
+                this.lidAngle = angle; 
+                this.isShaking = false;
+                this.shakeAmount = 0;
+                this.shakeOffset = { x: 0, y: 0 };
+            }
 
         } else {
-            angle = atan2(mouseY - (this.yCoor + rightEdgeY),
-                         mouseX - (this.xCoor + rightEdgeX));
-
+            this.lidAngle = atan2(mouseY - (this.yCoor + rightEdgeY), mouseX - (this.xCoor + rightEdgeX));
         }
-        rotate(angle);
 
+        rotate(this.lidAngle);
         ellipse(-((this.width - 30)/2), 0, this.width - 30, this.width/5 - 12);
-        
+
         pop();
 
         if (this.isFull) {
@@ -131,50 +134,8 @@ class CanShape {
         }
     }
 
-    displayExplosion() {
-        push();
-        translate(this.xCoor, this.yCoor);
-
-        for (let piece of this.canPieces) {
-            piece.x += piece.dx;
-            piece.y += piece.dy;
-            piece.rotation += piece.rotationSpeed;
-            piece.dx *= this.explosionDecay;
-            piece.dy *= this.explosionDecay;
-            
-            push();
-            translate(piece.x, piece.y);
-            rotate(piece.rotation);
-            fill(this.color[0], this.color[1], this.color[2], this.fadeOut);
-            noStroke();
-            rect(0, 0, piece.width, piece.height);
-            pop();
-
-        for (let memory of this.memories) {
-            memory.x += memory.dx;
-            memory.y += memory.dy;
-            memory.rotation += memory.rotationSpeed;
-            memory.dx *= this.explosionDecay;
-            memory.dy *= this.explosionDecay;
-            
-            push();
-            translate(memory.x, memory.y);
-            rotate(memory.rotation);
-            fill(memory.color[0], memory.color[1], memory.color[2], this.fadeOut);
-            noStroke();
-            ellipse(0, 0, memory.size);
-            triangle(-10, -10, 0, 0, 10, 10);
-            pop();
-        }
-
-        this.fadeOut = max(this.fadeOut - 2, 0);
-
-        pop();
-        }
-    }
-
-    updateShake() {
-        if (this.shakeAmount > 5) {
+    updateShake(amount = this.shakeAmount) {
+        if (this.shakeAmount > 5 || amount > 5) {
             this.shakeOffset.x = random(-this.shakeAmount, this.shakeAmount);
             this.shakeOffset.y = random(-this.shakeAmount, this.shakeAmount);
             this.shakeAmount *= 1; 
@@ -228,36 +189,4 @@ class CanShape {
         return full;
     }
 
-    explode() {
-        if (!this.explosionStarted) {
-            this.explosionStarted = true;
-            this.exploded = true;
-    
-            for (let i = 0; i < 8; i++) {
-                this.canPieces.push({
-                    x: 0,
-                    y: 0,
-                    dx: random(-this.explosionForce, this.explosionForce),
-                    dy: random(-this.explosionForce, this.explosionForce),
-                    rotation: random(TWO_PI),
-                    rotationSpeed: random(-0.2, 0.2),
-                    width: this.width / 2,
-                    height: this.height / 4
-                });
-            }
-
-            for (let i = 0; i < 5; i++) { 
-                this.memories.push(new Memory(this.xCoor, this.yCoor - this.height / 2)); 
-            }
-
-            for (let memory of this.memories) {
-                memory.dx = random(-this.explosionForce, this.explosionForce);
-                memory.dy = random(-this.explosionForce, this.explosionForce);
-                memory.rotation = random(TWO_PI);
-                memory.rotationSpeed = random(-0.1, 0.1);
-                memory.floating = true; 
-            }
-        }
-    }
-    
 }

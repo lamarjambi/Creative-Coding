@@ -7,8 +7,7 @@
 // to differenr scenes to express the emotions **transitionsss**
 // maybe the after the EMOTIONS BOMB, expand on a blue/dark navy marble then the melancholy scene (state = 1)
 // then go back to da bomb, expand on green for calm scene (state = 2)
-// then bom, expand on yellow for happy scene (state = 3)
-// FINALLY, close the damn lid because memories are part of us :]
+// FINALLY, close the damn lid because memories are part of us :] (dstate = 3)
 // ==========================
 
 let subCan;
@@ -40,6 +39,10 @@ let totalClouds = 0;
 const CLOUDS_THRESHOLD = 4;
 const CLOUD_Y_RANGE = 150;
 
+let finalCan = null;
+let finalMem = [];
+let finalCatch = 0;
+
 
 function setup() {
     createCanvas(1280, 550);
@@ -47,35 +50,17 @@ function setup() {
     
     // debugging 
     // state = 2;
+    // state = 3;
 
     for (let i = 0; i < 5; i++) {
         memories.push(new Memory());
     }
 
-    // for melancholy setup
-    if (state === 1) {
-        // background(20, 22, 28);
+    // state 3 setup
+    finalCan = new CanShape(width / 2, height / 2);
 
-        for (let i = 0; i < PARTICLE_COUNT; i++) {
-            particles.push({
-              x: random(width),
-              y: random(height),
-              size: random(2, 6),
-              speed: random(0.2, 0.8),
-              opacity: random(40, 120)
-            });
-          }
-        
-          for (let i = 0; i < DRIP_COUNT; i++) {
-            createNewDrip();
-          }
-          
-          noiseDetail(3, 0.5);
-
-          // for calm setup
-    } else if (state === 2) {
-        console.log("Setup: Initializing clouds for calm state");
-        initializeClouds();
+    for (let i = 0; i < 5; i++) {
+        finalMem.push(new Memory());
     }
 }
 
@@ -129,9 +114,59 @@ function draw() {
 
     } else if (state === 2) {
         calmScene();
+
+    } else if (state === 3) {
+        console.log("state 3!!");
+
+        background(164, 215, 250);
+        for (let elem of bkgElem) {
+            elem.display();
+            elem.move();
+        }
+
+        if (finalCan.memories.length < finalCan.MAX) {
+            for (let i = 0; i < finalCan.MAX; i++) {
+                finalCan.collectMemory(new Memory());
+            }
+
+            finalCatch = finalCan.MAX;
+        }
+
+        // if lid is closed -> stop shaking (done in class)
+        // if (finalCan.isClosed) {
+        //     finalCan.isShaking = false;
+
+        // } else {
+        //     finalCan.isShaking = true;
+        // }
+
+        // if full -> close!
+        if (finalCan.isFull(finalCatch)) {
+            finalCan.closeLid();
+        }
+
+        for (let i = finalMem.length - 1; i >= 0; i--) {
+            finalMem[i].move();
+            finalMem[i].display();
+
+            // check if memory was missed
+            if (finalMem[i].yCoor > height) {
+                finalMem.splice(i, 1);
+                finalMem.push(new Memory());
+
+            // check if there's collision (caught)
+            } else if (finalMem[i].hits(finalCan)) {
+                finalCan.collectMemory(finalMem[i]);
+                finalMem.splice(i, 1);
+                finalMem.push(new Memory()); 
+                finalCatch++;
+            }
+        }
+
+        finalCan.display();
+        finalCan.move();
     }
 
-    // is isTransitioning = true;
     if (isTransitioning) {
         transition();
     }
@@ -169,6 +204,7 @@ function transition() {
         currCol = 0;  
 
         state++;  
+        console.log("state:", state);
     }
 }
 
@@ -184,21 +220,21 @@ function melancholyScene() {
         p.y += p.speed;
         
         if (p.y > height) {
-        p.y = 0;
-        p.x = random(width);
+            p.y = 0;
+            p.x = random(width);
         }
 
         if (p.x < 0) {
-        p.x = width;
+            p.x = width;
         }
 
         if (p.x > width) {
-        p.x = 0;
+            p.x = 0;
         }
 
         let gradient = drawingContext.createRadialGradient(
-        p.x, p.y, 0, 
-        p.x, p.y, p.size * 2
+            p.x, p.y, 0, 
+            p.x, p.y, p.size * 2
         );
 
         gradient.addColorStop(0, `rgba(130, 150, 180, ${p.opacity / 255})`);
@@ -318,11 +354,10 @@ function calmScene() {
     if (isTransitioning) {
         background(random(255), random(255), random(255));
     } else {
-        // Draw gradient sky
         let c1 = color(135, 206, 235);
         let c2 = color(255, 253, 208);
         
-        noStroke(); // Reset stroke before gradient
+        noStroke(); 
         for (let y = 0; y < height; y++) {
             let inter = map(y, 0, height, 0, 1);
             let c = lerpColor(c1, c2, inter);
@@ -348,7 +383,7 @@ function calmScene() {
         cloud.x += cloud.speed;
     });
 
-    // if cloud is off screen -> replace 
+    // if cloud is off screen -> replace :3
     let cloudsToAdd = 0;
     clouds = clouds.filter(cloud => {
         if (cloud.x > width + cloud.size) {
@@ -385,6 +420,7 @@ function calmScene() {
             drawSparkle(s);
             return true;
         }
+
         return false;
     });
 
@@ -420,6 +456,7 @@ function drawSparkle(s) {
         rotate(PI/2);
         ellipse(0, 0, s.size * s.life, s.size/3 * s.life);
     }
+
     pop();
 }
 
