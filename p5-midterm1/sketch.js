@@ -7,7 +7,8 @@
 // to differenr scenes to express the emotions **transitionsss**
 // maybe the after the EMOTIONS BOMB, expand on a blue/dark navy marble then the melancholy scene (state = 1)
 // then go back to da bomb, expand on green for calm scene (state = 2)
-// FINALLY, close the damn lid because memories are part of us :] (dstate = 3)
+// FINALLY, close the damn lid because memories are part of us :] (state = 3)
+// maybe make transition random
 // ==========================
 
 let subCan;

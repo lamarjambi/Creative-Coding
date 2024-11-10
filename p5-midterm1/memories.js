@@ -23,11 +23,12 @@ class Memory {
         fill(this.color);
         noStroke();
         ellipse(this.xCoor, this.yCoor, this.size);
-        triangle(
-            this.xCoor, this.yCoor,
-            this.xCoor - 10, this.yCoor - 10,
-            this.xCoor + 10, this.yCoor + 10
-        );
+        // triangle(
+        //     this.xCoor, this.yCoor,
+        //     this.xCoor - 10, this.yCoor - 10,
+        //     this.xCoor + 10, this.yCoor + 10
+        // );
+        
     }
   
     hits(can) {
